@@ -11,6 +11,10 @@ namespace TextEditor
 		public Toolbar editToolbar;
 		public ScrolledWindow editorWindow;
 		public string fileName;
+		public MenuItem file;
+		Menu filemenu;
+		public MenuItem edit;
+		Menu editmenu;
 		Window parent;
 		bool isSaved;
 		Stack<string> undoStack;
@@ -18,6 +22,18 @@ namespace TextEditor
 		string clipboard;
 
 		TextView editorView;
+
+		MenuItem newfile;
+		MenuItem open;
+		MenuItem save;
+		MenuItem saveAs;
+		MenuItem close;
+
+		MenuItem copy;
+		MenuItem paste;
+		MenuItem cut;
+		MenuItem undo;
+		MenuItem redo;
 
 		ToolButton newBtn;
 		ToolButton openBtn;
@@ -37,6 +53,34 @@ namespace TextEditor
 			editorWindow = new ScrolledWindow ();
 			editorView = new TextView ();
 			editorWindow.Add (editorView);
+
+			file = new MenuItem ("File");
+			filemenu = new Menu ();
+			file.Submenu = filemenu;
+			newfile = new MenuItem ("New file");
+			open = new MenuItem ("Open file");
+			save = new MenuItem ("Save file");
+			saveAs = new MenuItem ("Save file as ...");
+			close = new MenuItem ("Close file");
+			filemenu.Append (newfile);
+			filemenu.Append (open);
+			filemenu.Append (save);
+			filemenu.Append (saveAs);
+			filemenu.Append (close);
+
+			edit = new MenuItem ("Edit");
+			editmenu = new Menu ();
+			edit.Submenu = editmenu;
+			copy = new MenuItem ("Copy");
+			paste = new MenuItem ("Paste");
+			cut = new MenuItem ("Cut");
+			undo = new MenuItem ("Undo");
+			redo = new MenuItem ("Redo");
+			editmenu.Append (copy);
+			editmenu.Append (paste);
+			editmenu.Append (cut);
+			editmenu.Append (undo);
+			editmenu.Append (redo);
 
 			editToolbar = new Toolbar ();
 			copyBtn = new ToolButton (Stock.Copy);
@@ -78,25 +122,39 @@ namespace TextEditor
 			parent.Title = fileName;
 			isSaved = true;
 			saveBtn.Sensitive = false;
+			save.Sensitive = false;
 			undoBtn.Sensitive = false;
+			undo.Sensitive = false;
 			undoStack.Clear ();
 			redoBtn.Sensitive = false;
+			redo.Sensitive = false;
 			redoStack.Clear ();
 
 			pasteBtn.Sensitive = false;
+			paste.Sensitive = false;
 
 			editorView.Buffer.Changed += OnTextChanged;
 			editorView.Buffer.UserActionBegun += OnUserActionBegun;
 
+			newfile.Activated += OnNew;
 			newBtn.Clicked += OnNew ;
+			open.Activated += OnOpen;
 			openBtn.Clicked += OnOpen;
+			save.Activated += OnSave;
 			saveBtn.Clicked += OnSave;
+			saveAs.Activated += OnSaveAs;
 			saveAsBtn.Clicked += OnSaveAs;
+			close.Activated += OnNew;
 			closeBtn.Clicked += OnNew;
+			undo.Activated += OnUndo;
 			undoBtn.Clicked += OnUndo;
+			redo.Activated += OnRedo;
 			redoBtn.Clicked += OnRedo;
+			copy.Activated += OnCopy;
 			copyBtn.Clicked += OnCopy;
+			cut.Activated += OnCut;
 			cutBtn.Clicked += OnCut;
+			paste.Activated += OnPaste;
 			pasteBtn.Clicked += OnPaste;
 		}
 
@@ -112,9 +170,10 @@ namespace TextEditor
 			if (editorView.Buffer.GetSelectionBounds (out startIter, out finishIter)) {
 				clipboard = editorView.Buffer.GetText (startIter, finishIter, true);
 				if(pasteBtn.Sensitive==false)pasteBtn.Sensitive = true;
+				if (paste.Sensitive == false) paste.Sensitive = true; 
 				undoStack.Push (editorView.Buffer.Text);
-				if (undoBtn.Sensitive == false)
-					undoBtn.Sensitive = true;
+				if (undoBtn.Sensitive == false)	undoBtn.Sensitive = true;
+				if (undo.Sensitive == false) undo.Sensitive = true;
 				editorView.Buffer.Delete (ref startIter, ref finishIter);
 			}
 
@@ -127,42 +186,47 @@ namespace TextEditor
 			if (editorView.Buffer.GetSelectionBounds (out startIter, out finishIter)) {
 				clipboard = editorView.Buffer.GetText (startIter, finishIter, true);
 				if(pasteBtn.Sensitive==false)pasteBtn.Sensitive = true;
+				if (paste.Sensitive == false) paste.Sensitive = true; 
 			}
 		}
 
 		void OnRedo(object sender, EventArgs args)
 		{
 			undoStack.Push (editorView.Buffer.Text);
-			if (undoBtn.Sensitive == false)
-				undoBtn.Sensitive = true;
-			if (redoStack.Count>0)
-			editorView.Buffer.Text = redoStack.Pop ();
-			if (redoStack.Count == 0)
+			if (undoBtn.Sensitive == false)	undoBtn.Sensitive = true;
+			if (undo.Sensitive == false) undo.Sensitive = true;
+			if (redoStack.Count>0)	editorView.Buffer.Text = redoStack.Pop ();
+			if (redoStack.Count == 0) {
 				redoBtn.Sensitive = false;
+				redo.Sensitive = false;
+			}
+				
 		}
 
 		void OnUndo(object sender, EventArgs args)
 		{
 			redoStack.Push (editorView.Buffer.Text);
-			if (redoBtn.Sensitive == false)
-				redoBtn.Sensitive = true;
-			if (undoStack.Count>0)
-			editorView.Buffer.Text = undoStack.Pop ();
-			if (undoStack.Count == 0)
+			if (redoBtn.Sensitive == false)	redoBtn.Sensitive = true;
+			if (redo.Sensitive == false)	redo.Sensitive = true;
+			if (undoStack.Count>0)	editorView.Buffer.Text = undoStack.Pop ();
+			if (undoStack.Count == 0) {
 				undoBtn.Sensitive = false;
+				undo.Sensitive = false;
+			}
 		}
 
 		void OnUserActionBegun(object sender, EventArgs args)
 		{
 			undoStack.Push (editorView.Buffer.Text);
-			if (undoBtn.Sensitive == false)
-				undoBtn.Sensitive = true;
+			if (undoBtn.Sensitive == false)	undoBtn.Sensitive = true;
+			if (undo.Sensitive == false) undo.Sensitive = true;
 		}
 
 		void OnTextChanged(object sender, EventArgs args)
 		{
 			isSaved = false;
 			if (saveBtn.Sensitive==false) saveBtn.Sensitive = true;
+			if (save.Sensitive==false) save.Sensitive = true;
 		}
 
 		void OnNew(object sender, EventArgs args)
@@ -171,16 +235,17 @@ namespace TextEditor
 			if (!isSaved)
 			{
 				var dialog = new Dialog ();
-				dialog.AddButton ("Save without changes", ResponseType.No);
+				dialog.AddButton ("Close without save", ResponseType.No);
 				dialog.AddButton (Stock.Cancel, ResponseType.Cancel);
 				dialog.AddButton ("Save changes", ResponseType.Ok);
 				var dialogLabel = new Label ("Save changes in file?");
 				dialog.VBox.PackStart (dialogLabel, false, false, 0);
 				dialog.ShowAll ();
-				if (dialog.Run () == (int)ResponseType.Ok) {
+				int response = dialog.Run ();
+				if (response == (int)ResponseType.Ok) {
 					System.IO.File.WriteAllText (fileName, editorView.Buffer.Text);
 					}
-				if (dialog.Run () == (int)ResponseType.Cancel) {
+				if (response == (int)ResponseType.Cancel) {
 					cancel = true;}
 				dialog.Destroy ();
 			}
@@ -190,9 +255,12 @@ namespace TextEditor
 				parent.Title = fileName;
 				isSaved = true;
 				saveBtn.Sensitive = false;
+				save.Sensitive = false;
 				undoBtn.Sensitive = false;
+				undo.Sensitive = false;
 				undoStack.Clear ();
 				redoBtn.Sensitive = false;
+				redo.Sensitive = false;
 				redoStack.Clear ();
 			}
 		}
@@ -202,6 +270,7 @@ namespace TextEditor
 			System.IO.File.WriteAllText (fileName, editorView.Buffer.Text);
 			isSaved = true;
 			saveBtn.Sensitive = false;
+			save.Sensitive = false;
 
 		}
 
@@ -221,6 +290,7 @@ namespace TextEditor
 				parent.Title = fileName;
 				isSaved = true;
 				saveBtn.Sensitive = false;
+				save.Sensitive = false;
 			}
 
 			filechooser.Destroy();
@@ -239,10 +309,11 @@ namespace TextEditor
 				var dialogLabel = new Label ("Save changes in file?");
 				dialog.VBox.PackStart (dialogLabel, false, false, 0);
 				dialog.ShowAll ();
-				if (dialog.Run () == (int)ResponseType.Ok) {
+				int response = dialog.Run ();
+				if (response == (int)ResponseType.Ok) {
 					System.IO.File.WriteAllText (fileName, editorView.Buffer.Text);
 				}
-				if (dialog.Run () == (int)ResponseType.Cancel) {
+				if (response == (int)ResponseType.Cancel) {
 					cancel = true;
 				}
 				dialog.Destroy ();
@@ -270,9 +341,12 @@ namespace TextEditor
 				parent.Title = fileName;
 				isSaved = true;
 				saveBtn.Sensitive = false;
+				save.Sensitive = false;
 				undoBtn.Sensitive = false;
+				undo.Sensitive = false;
 				undoStack.Clear ();
 				redoBtn.Sensitive = false;
+				redo.Sensitive = false;
 				redoStack.Clear ();
 			}
 	
