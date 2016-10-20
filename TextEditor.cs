@@ -41,6 +41,7 @@ namespace TextEditor
 		ToolButton saveAsBtn;
 		ToolButton closeBtn;
 
+
 		ToolButton copyBtn;
 		ToolButton pasteBtn;
 		ToolButton cutBtn;
@@ -61,7 +62,7 @@ namespace TextEditor
 			open = new MenuItem ("Open file");
 			save = new MenuItem ("Save file");
 			saveAs = new MenuItem ("Save file as ...");
-			close = new MenuItem ("Close file");
+			close = new MenuItem ("Close");
 			filemenu.Append (newfile);
 			filemenu.Append (open);
 			filemenu.Append (save);
@@ -105,6 +106,7 @@ namespace TextEditor
 			saveBtn = new ToolButton (Stock.Save);
 			saveAsBtn = new ToolButton (Stock.SaveAs);
 			closeBtn = new ToolButton (Stock.Close);
+
 			fileToolbar.Insert (newBtn, 0);
 			fileToolbar.Insert (openBtn, 1);
 			fileToolbar.Insert (saveBtn, 2);
@@ -144,8 +146,8 @@ namespace TextEditor
 			saveBtn.Clicked += OnSave;
 			saveAs.Activated += OnSaveAs;
 			saveAsBtn.Clicked += OnSaveAs;
-			close.Activated += OnNew;
-			closeBtn.Clicked += OnNew;
+			close.Activated += OnClose;
+			closeBtn.Clicked += OnClose;
 			undo.Activated += OnUndo;
 			undoBtn.Clicked += OnUndo;
 			redo.Activated += OnRedo;
@@ -156,6 +158,32 @@ namespace TextEditor
 			cutBtn.Clicked += OnCut;
 			paste.Activated += OnPaste;
 			pasteBtn.Clicked += OnPaste;
+		}
+
+
+		void OnClose(object sender, EventArgs args)
+		{
+			bool cancel = false;
+			if (!isSaved)
+			{
+				var dialog = new Dialog ();
+				dialog.AddButton ("Close without save", ResponseType.No);
+				dialog.AddButton (Stock.Cancel, ResponseType.Cancel);
+				dialog.AddButton ("Save changes", ResponseType.Ok);
+				var dialogLabel = new Label ("Save changes in file?");
+				dialog.VBox.PackStart (dialogLabel, false, false, 0);
+				dialog.ShowAll ();
+				int response = dialog.Run ();
+				if (response == (int)ResponseType.Ok) {
+					System.IO.File.WriteAllText (fileName, editorView.Buffer.Text);
+				}
+				if (response == (int)ResponseType.Cancel) {
+					cancel = true;}
+				dialog.Destroy ();
+			}
+			if (!cancel) {
+				Application.Quit ();
+			}
 		}
 
 		void OnPaste(object sender, EventArgs args)
