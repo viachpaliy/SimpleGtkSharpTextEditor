@@ -2,6 +2,7 @@
 using Gtk;
 using System.IO;
 using System.Collections.Generic;
+using Pango;
 
 namespace TextEditor
 {
@@ -85,10 +86,15 @@ namespace TextEditor
 
 			editToolbar = new Toolbar ();
 			copyBtn = new ToolButton (Stock.Copy);
+			copyBtn.TooltipText = "Copy";
 			pasteBtn = new ToolButton (Stock.Paste);
+			pasteBtn.TooltipText = "Paste";
 			cutBtn = new ToolButton (Stock.Cut);
+			cutBtn.TooltipText = "Cut";
 			undoBtn = new ToolButton (Stock.Undo);
+			undoBtn.TooltipText = "Undo";
 			redoBtn = new ToolButton (Stock.Redo);
+			redoBtn.TooltipText = "Redo";
 			editToolbar.Insert (copyBtn, 0);
 			editToolbar.Insert (pasteBtn, 1);
 			editToolbar.Insert (cutBtn, 2);
@@ -102,10 +108,15 @@ namespace TextEditor
 
 			fileToolbar = new Toolbar ();
 			newBtn = new ToolButton (Stock.New);
+			newBtn.TooltipText = "New";
 			openBtn = new ToolButton (Stock.Open);
+			openBtn.TooltipText = "Open";
 			saveBtn = new ToolButton (Stock.Save);
+			saveBtn.TooltipText = "Save";
 			saveAsBtn = new ToolButton (Stock.SaveAs);
+			saveAsBtn.TooltipText = "Save as...";
 			closeBtn = new ToolButton (Stock.Close);
+			closeBtn.TooltipText = "Close";
 
 			fileToolbar.Insert (newBtn, 0);
 			fileToolbar.Insert (openBtn, 1);
@@ -138,6 +149,7 @@ namespace TextEditor
 			editorView.Buffer.Changed += OnTextChanged;
 			editorView.Buffer.UserActionBegun += OnUserActionBegun;
 
+
 			newfile.Activated += OnNew;
 			newBtn.Clicked += OnNew ;
 			open.Activated += OnOpen;
@@ -159,6 +171,8 @@ namespace TextEditor
 			paste.Activated += OnPaste;
 			pasteBtn.Clicked += OnPaste;
 		}
+
+	
 
 
 		void OnClose(object sender, EventArgs args)
